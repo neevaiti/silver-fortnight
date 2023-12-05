@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+{% block content %}
+
+
+    <section class="hero-section">
+        <h2>Login to Your Account</h2>
+        <form method="post" action="{% url 'login' %}">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit">Login</button>
+        </form>
+    </section>
+
+    {% endblock content %}
