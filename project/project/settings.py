@@ -18,9 +18,16 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.environ.get('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.getenv('DEBUG')
+if os.getenv('PROD') == 'False':
+    DEBUG = True
+else:
+    DEBUG = True
 
-ALLOWED_HOSTS = ['anto-web.azurewebsites.net', '0.0.0.0', '*', '127.0.0.1', 'localhost']
+
+if os.getenv('PROD') == 'False':
+    ALLOWED_HOSTS = ['*', '127.0.0.1', 'localhost', '0.0.0.0']
+else:
+    ALLOWED_HOSTS = [os.getenv('PROD_ALLOWED_HOST'), '0.0.0.0']
 
 
 
@@ -38,14 +45,22 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
 ]
+
+
+
+# if os.getenv('PROD_DEBUG') == 'False':
+#     pass
+# else:
+#     CSRF_TRUSTED_ORIGINS = ['https://anto-web.azurewebsites.net']
+
 
 
 # LOGGING = {
@@ -90,13 +105,26 @@ TEMPLATES = [
 WSGI_APPLICATION = 'project.wsgi.application'
 
 
-
-DATABASES = {
+# Allow database configuration via environment variables
+if os.environ.get('PROD') == 'False':
+    DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': BASE_DIR / 'db.sqlite3',
     }
+    }
+else:
+    DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': os.getenv('POSTGRES_DB'),
+        'USER': os.getenv('POSTGRES_USER'),
+        'PASSWORD': os.getenv('POSTGRES_PASSWORD'),
+        'HOST': os.getenv('POSTGRES_HOST'),
+        'PORT': os.getenv('POSTGRES_PORT'),
+    }
 }
+
 
 
 # Password validation
@@ -134,10 +162,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
 STATIC_URL = 'static/'
-STATIC_ROOT = BASE_DIR / "staticfiles"
-STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, "static"),
-]
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
 
 # Default primary key field type
